@@ -232,6 +232,11 @@ const Hangman = () => {
   const [guessedLetters, setGuessedLetters] = useState([]);
   const [attemptsLeft, setAttemptsLeft] = useState(6);
   const [gameStatus, setGameStatus] = useState("playing");
+  const [theme, setTheme] = useState("light");
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
 
   const onLetterClick = (letter) => {
     if (gameStatus !== "playing" || guessedLetters.includes(letter)) return;
@@ -266,9 +271,50 @@ const Hangman = () => {
     setGameStatus("playing");
   };
 
+  // SVG Drawing Parts based on attempts left
+  const renderHangman = () => {
+    const parts = [
+      // Base and Pole
+      <g key="base">
+        <line x1="10" y1="250" x2="150" y2="250" stroke="var(--primary-color)" strokeWidth="4" />
+        <line x1="80" y1="250" x2="80" y2="20" stroke="var(--primary-color)" strokeWidth="4" />
+        <line x1="80" y1="20" x2="200" y2="20" stroke="var(--primary-color)" strokeWidth="4" />
+        <line x1="200" y1="20" x2="200" y2="50" stroke="var(--primary-color)" strokeWidth="4" />
+      </g>,
+      // Head (5 attempts left)
+      <circle key="head" cx="200" cy="80" r="30" stroke="var(--primary-color)" strokeWidth="4" fill="transparent" />,
+      // Body (4 attempts left)
+      <line key="body" x1="200" y1="110" x2="200" y2="170" stroke="var(--primary-color)" strokeWidth="4" />,
+      // Left Arm (3 attempts left)
+      <line key="larm" x1="200" y1="130" x2="160" y2="160" stroke="var(--primary-color)" strokeWidth="4" />,
+      // Right Arm (2 attempts left)
+      <line key="rarm" x1="200" y1="130" x2="240" y2="160" stroke="var(--primary-color)" strokeWidth="4" />,
+      // Left Leg (1 attempt left)
+      <line key="lleg" x1="200" y1="170" x2="170" y2="220" stroke="var(--primary-color)" strokeWidth="4" />,
+      // Right Leg (0 attempts left)
+      <line key="rleg" x1="200" y1="170" x2="230" y2="220" stroke="var(--primary-color)" strokeWidth="4" />
+    ];
+
+    // Number of mistakes made is 6 - attemptsLeft
+    const mistakes = 6 - attemptsLeft;
+    // We always show the base, and then add one part per mistake
+    return (
+      <svg height="260" width="300" className="hangman-drawing">
+        {parts.slice(0, mistakes + 1)}
+      </svg>
+    );
+  };
+
   return (
-    <div className="hangman-container">
-      <h1>Hangman</h1>
+    <div className={`app-container ${theme}`}>
+      <button className="theme-toggle" onClick={toggleTheme}>
+        {theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode"}
+      </button>
+      <div className="hangman-container">
+        <h1>Hangman</h1>
+
+        {renderHangman()}
+
       <p className="hint">Hint: {currentWord.hint}</p>
       <div className="word">
         {currentWord.word.split("").map((char, index) => (
@@ -300,11 +346,12 @@ const Hangman = () => {
           </p>
         )}
       </div>
-      {(gameStatus === "won" || gameStatus === "lost") && (
-        <button className="reset-button" onClick={resetGame}>
-          Play Again
-        </button>
-      )}
+        {(gameStatus === "won" || gameStatus === "lost") && (
+          <button className="reset-button" onClick={resetGame}>
+            Play Again
+          </button>
+        )}
+      </div>
     </div>
   );
 };
